@@ -1,5 +1,5 @@
 trigger:
-- main  # Run pipeline on every push to main branch
+- main
 
 pool:
   vmImage: 'ubuntu-latest'
@@ -8,20 +8,9 @@ steps:
 - task: UsePythonVersion@0
   inputs:
     versionSpec: '3.10'
-    addToPath: true
 
 - script: |
     python -m pip install --upgrade pip
     pip install -r requirements.txt
-  displayName: '📦 Install dependencies'
-
-- script: |
-    python main.py
-  displayName: '🚀 Run Churn Prediction Script'
-
-# Optional test step
-- script: |
-    pip install pytest
-    pytest tests/
-  displayName: '✅ Run Unit Tests'
-  condition: succeededOrFailed()
+    python main.py  # or streamlit run main.py if using Streamlit
+  displayName: 'Install dependencies and run script'
