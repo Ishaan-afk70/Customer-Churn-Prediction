@@ -4,7 +4,7 @@ pipeline {
     stages {
         stage('Clone Repo') {
             steps {
-                git branch: 'master', url: 'https://github.com/Ishaan-afk70/Customer-Churn-Prediction.git'
+                git branch: 'main', url: 'https://github.com/Ishaan-afk70/Customer-Churn-Prediction.git'
             }
         }
 
