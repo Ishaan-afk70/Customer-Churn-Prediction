@@ -16,7 +16,7 @@ pipeline {
 
         stage('Run Model Script') {
             steps {
-                bat 'python churn_prediction.py'
+                bat 'python churn.py'
             }
         }
     }
