@@ -10,13 +10,13 @@ pipeline {
 
         stage('Install Dependencies') {
             steps {
-                sh 'pip install -r requirements.txt || pip install pandas scikit-learn matplotlib'
+                bat 'pip install -r requirements.txt || pip install pandas scikit-learn matplotlib'
             }
         }
 
         stage('Run Model Script') {
             steps {
-                sh 'python churn_prediction.py'
+                bat 'python churn_prediction.py'
             }
         }
     }
