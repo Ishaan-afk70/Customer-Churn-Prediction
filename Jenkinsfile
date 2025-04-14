@@ -10,7 +10,7 @@ pipeline {
 
         stage('Install Dependencies') {
             steps {
-                bat 'pip install -r requirements.txt || pip install pandas scikit-learn matplotlib'
+                bat 'pip install -r requirements.txt || pip install pandas scikit-learn matplotlib pytest'
             }
         }
 
@@ -18,6 +18,36 @@ pipeline {
             steps {
                 bat 'python churn.py'
             }
+        }
+
+        stage('Run Tests') {
+            steps {
+                bat 'pytest tests'
+            }
+        }
+
+        stage('Build Docker Image') {
+            when {
+                expression { fileExists('Dockerfile') }
+            }
+            steps {
+                bat 'docker build -t churn-prediction-app .'
+            }
+        }
+
+        stage('Deploy (optional)') {
+            steps {
+                echo 'You can add deployment commands here (e.g., run container, push to Docker Hub)'
+            }
+        }
+    }
+
+    post {
+        success {
+            echo '✅ CI/CD pipeline completed successfully!'
+        }
+        failure {
+            echo '❌ Pipeline failed. Check logs for issues.'
         }
     }
 }
