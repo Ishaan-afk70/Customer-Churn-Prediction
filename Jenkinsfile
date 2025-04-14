@@ -26,15 +26,6 @@ pipeline {
             }
         }
 
-        stage('Build Docker Image') {
-            when {
-                expression { fileExists('Dockerfile') }
-            }
-            steps {
-                bat 'docker build -t churn-prediction-app .'
-            }
-        }
-
         stage('Deploy (optional)') {
             steps {
                 echo 'You can add deployment commands here (e.g., run container, push to Docker Hub)'
