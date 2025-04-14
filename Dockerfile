@@ -1,17 +1,28 @@
-# Use an official Python runtime as a base image
-FROM python:3.9-slim
+# Use an official lightweight Python image
+FROM python:3.10-slim
 
-# Set the working directory in the container
+# Set environment variables
+ENV PYTHONDONTWRITEBYTECODE=1
+ENV PYTHONUNBUFFERED=1
+
+# Set working directory
 WORKDIR /app
 
-# Copy the current directory contents into the container at /app
-COPY . /app
+# Copy requirements if you have it, or write them directly here
+COPY requirements.txt .
 
-# Install any needed dependencies specified in requirements.txt
-RUN pip install --no-cache-dir -r requirements.txt
+# Install dependencies
+RUN pip install --upgrade pip \
+ && pip install -r requirements.txt
 
-# Expose the port the app runs on (typically 5000 for Flask)
-EXPOSE 5000
+# Copy the app code and model files into the container
+COPY . .
 
-# Define the command to run the app
-CMD ["python", "churn.py"]
+# Expose Streamlit's default port
+EXPOSE 8501
+
+# Streamlit config to disable browser auto-launch
+ENV STREAMLIT_BROWSER_GATHER_USAGE_STATS=false
+
+# Command to run the app
+CMD ["streamlit", "run", "churn.py", "--server.port=8501", "--server.enableCORS=false"]
