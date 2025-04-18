@@ -10,7 +10,7 @@ pipeline {
 
         stage('Install Dependencies') {
             steps {
-                bat 'pip install -r requirements.txt || pip install pandas scikit-learn matplotlib pytest'
+                bat '"C:\\Users\\dell\\AppData\\Local\\Programs\\Python\\Python312\\python.exe" -m pip install -r requirements.txt || "C:\\Users\\dell\\AppData\\Local\\Programs\\Python\\Python312\\python.exe" -m pip install pandas scikit-learn matplotlib pytest'
             }
         }
 
