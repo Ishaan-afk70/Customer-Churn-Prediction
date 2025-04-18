@@ -3,22 +3,26 @@ import pytest
 import pandas as pd
 from sklearn.preprocessing import LabelEncoder
 from sklearn.metrics import accuracy_score
-from churn import load_model  # Import your actual app code here
+from churn import load_model  # This should load your trained model and encoders
 
-def download_data():
-    dataset_name = "blastchar/telco-customer-churn"
-    zip_file = "telco-customer-churn.zip"
+# -----------------------------
+# Utility: Load dataset locally
+# -----------------------------
+def load_local_data():
     csv_file = "WA_Fn-UseC_-Telco-Customer-Churn.csv"
-
-    # Download and unzip dataset
-    os.system(f"kaggle datasets download -d {dataset_name} -f {csv_file} --force")
-    os.system(f"unzip -o {zip_file}")
-
-    # Load into DataFrame
+    if not os.path.exists(csv_file):
+        raise FileNotFoundError(f"{csv_file} not found in project root.")
     df = pd.read_csv(csv_file)
+
+    # Fix invalid TotalCharges: convert blanks to NaN and drop them
+    df["TotalCharges"] = pd.to_numeric(df["TotalCharges"], errors="coerce")
+    df.dropna(subset=["TotalCharges"], inplace=True)
+
     return df
 
-# Mock inputs for prediction test
+# -----------------------------
+# Mock inputs for testing
+# -----------------------------
 @pytest.fixture
 def mock_inputs():
     return {
@@ -43,19 +47,25 @@ def mock_inputs():
         "TotalCharges": 780.0,
     }
 
-# ✅ Test 1: Dataset loading
+# -----------------------------
+# Test 1: Dataset loading
+# -----------------------------
 def test_load_dataset():
-    df = download_data()
+    df = load_local_data()
     assert isinstance(df, pd.DataFrame), "Dataset should be a pandas DataFrame"
     assert not df.empty, "Dataset should not be empty"
 
-# ✅ Test 2: Model loading
+# -----------------------------
+# Test 2: Model loading
+# -----------------------------
 def test_load_model():
     model_data, encoders = load_model()
     assert model_data is not None, "Model data should be loaded"
     assert encoders is not None, "Encoders should be loaded"
 
-# ✅ Test 3: Model prediction with mock inputs
+# -----------------------------
+# Test 3: Model predictions on mock input
+# -----------------------------
 def test_model_predictions(mock_inputs):
     model_data, encoders = load_model()
     loaded_model = model_data["model"]
@@ -70,27 +80,30 @@ def test_model_predictions(mock_inputs):
     prediction_prob = loaded_model.predict_proba(input_df)[0][1]
 
     assert prediction in [0, 1], "Prediction should be 0 or 1"
-    assert 0 <= prediction_prob <= 1, "Probability should be between 0 and 1"
+    assert 0 <= prediction_prob <= 1, "Probability must be between 0 and 1"
 
-# ✅ Test 4: Accuracy on full dataset (optional)
+# -----------------------------
+# Test 4: Accuracy check on real dataset
+# -----------------------------
 def test_model_accuracy():
-    df = download_data()
+    df = load_local_data()
 
-    # Drop ID and prepare features and target
+    # Drop customerID and prepare features and target
     df = df.drop(columns=["customerID"])
     X = df.drop(columns=["Churn"])
-    y = df["Churn"].map({"Yes": 1, "No": 0})  # Encode labels
+    y = df["Churn"].map({"Yes": 1, "No": 0})  # Encode target labels
 
-    # Load model
+    # Load model and encoders
     model_data, encoders = load_model()
     loaded_model = model_data["model"]
 
-    # Encode features using saved encoders
+    # Apply encoding to features
     for col, encoder in encoders.items():
         if col in X.columns:
             X[col] = encoder.transform(X[col])
 
-    # Predict and check accuracy
+    # Predict and evaluate
     y_pred = loaded_model.predict(X)
     accuracy = accuracy_score(y, y_pred)
-    assert accuracy > 0.75, f"Accuracy should be > 75%, got {accuracy:.2%}"
+
+    assert accuracy > 0.75, f"Model accuracy too low: {accuracy:.2%}"
