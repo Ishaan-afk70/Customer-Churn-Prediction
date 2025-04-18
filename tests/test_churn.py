@@ -1,18 +1,30 @@
 import os
 import pytest
 import pandas as pd
+from kaggle.api.kaggle_api_extended import KaggleApi
 from sklearn.preprocessing import LabelEncoder
 from sklearn.metrics import accuracy_score
 from churn import load_model  # This should load your trained model and encoders
 
 # -----------------------------
-# Utility: Load dataset locally
+# Utility: Download dataset from Kaggle
 # -----------------------------
-def load_local_data():
-    csv_file = "WA_Fn-UseC_-Telco-Customer-Churn.csv"
-    if not os.path.exists(csv_file):
-        raise FileNotFoundError(f"{csv_file} not found in project root.")
-    df = pd.read_csv(csv_file)
+def download_from_kaggle():
+    # Set the Kaggle environment (you may need to set it in Jenkins already, but for local testing you can do this)
+    os.environ['KAGGLE_CONFIG_DIR'] = os.path.expanduser('~/.kaggle')
+    
+    # Initialize the Kaggle API
+    api = KaggleApi()
+    api.authenticate()
+    
+    # Download the dataset from Kaggle
+    dataset_name = 'blastchar/telco-customer-churn'
+    file_name = 'WA_Fn-UseC_-Telco-Customer-Churn.csv'
+    if not os.path.exists(file_name):
+        api.dataset_download_file(dataset_name, file_name, path=".", unzip=True)
+    
+    # Return the loaded DataFrame
+    df = pd.read_csv(file_name)
 
     # Fix invalid TotalCharges: convert blanks to NaN and drop them
     df["TotalCharges"] = pd.to_numeric(df["TotalCharges"], errors="coerce")
@@ -48,10 +60,10 @@ def mock_inputs():
     }
 
 # -----------------------------
-# Test 1: Dataset loading
+# Test 1: Dataset loading from Kaggle
 # -----------------------------
 def test_load_dataset():
-    df = load_local_data()
+    df = download_from_kaggle()
     assert isinstance(df, pd.DataFrame), "Dataset should be a pandas DataFrame"
     assert not df.empty, "Dataset should not be empty"
 
@@ -86,7 +98,7 @@ def test_model_predictions(mock_inputs):
 # Test 4: Accuracy check on real dataset
 # -----------------------------
 def test_model_accuracy():
-    df = load_local_data()
+    df = download_from_kaggle()
 
     # Drop customerID and prepare features and target
     df = df.drop(columns=["customerID"])
@@ -107,3 +119,4 @@ def test_model_accuracy():
     accuracy = accuracy_score(y, y_pred)
 
     assert accuracy > 0.75, f"Model accuracy too low: {accuracy:.2%}"
+
