@@ -16,13 +16,13 @@ pipeline {
 
         stage('Run Model Script') {
             steps {
-                bat 'python churn.py'
+                bat '"C:\\Users\\dell\\AppData\\Local\\Programs\\Python\\Python312\\python.exe" churn.py'
             }
         }
 
         stage('Run Tests') {
             steps {
-                bat 'pytest tests'
+                bat '"C:\\Users\\dell\\AppData\\Local\\Programs\\Python\\Python312\\python.exe" -m pytest tests'
             }
         }
 
