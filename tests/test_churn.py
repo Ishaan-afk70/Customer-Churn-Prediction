@@ -2,9 +2,7 @@ import os
 import pytest
 import pandas as pd
 from sklearn.preprocessing import LabelEncoder
-import pickle
 from sklearn.metrics import accuracy_score
-import streamlit as st
 from churn import load_model  # Import your actual app code here
 
 def download_data():
@@ -12,16 +10,15 @@ def download_data():
     zip_file = "telco-customer-churn.zip"
     csv_file = "WA_Fn-UseC_-Telco-Customer-Churn.csv"
 
-    # Download the dataset
+    # Download and unzip dataset
     os.system(f"kaggle datasets download -d {dataset_name} -f {csv_file} --force")
-
-    # Unzip the dataset
     os.system(f"unzip -o {zip_file}")
 
-    # Read dataset into a DataFrame
+    # Load into DataFrame
     df = pd.read_csv(csv_file)
     return df
-# Mock inputs
+
+# Mock inputs for prediction test
 @pytest.fixture
 def mock_inputs():
     return {
@@ -46,66 +43,54 @@ def mock_inputs():
         "TotalCharges": 780.0,
     }
 
-# Test case 1: Test dataset loading
+# ✅ Test 1: Dataset loading
 def test_load_dataset():
-    # Simulate downloading and loading dataset
     df = download_data()
-    
-    # Assertion: Ensure the dataset is loaded correctly
     assert isinstance(df, pd.DataFrame), "Dataset should be a pandas DataFrame"
     assert not df.empty, "Dataset should not be empty"
 
-# Test case 2: Test model loading
+# ✅ Test 2: Model loading
 def test_load_model():
-    model_data, encoders = load_model()  # Replace with actual method to load the model
+    model_data, encoders = load_model()
     assert model_data is not None, "Model data should be loaded"
     assert encoders is not None, "Encoders should be loaded"
 
-# Test case 3: Test model predictions on mock inputs
+# ✅ Test 3: Model prediction with mock inputs
 def test_model_predictions(mock_inputs):
-    # Load the model
     model_data, encoders = load_model()
     loaded_model = model_data["model"]
 
-    # Prepare mock input data for prediction
     input_df = pd.DataFrame([mock_inputs])
-    
-    # Apply encoding
-    encoded_input = input_df.copy()
+
     for col, encoder in encoders.items():
-        if col in encoded_input.columns:
-            encoded_input[col] = encoder.transform(encoded_input[col])
+        if col in input_df.columns:
+            input_df[col] = encoder.transform(input_df[col])
 
-    # Make prediction
-    prediction = loaded_model.predict(encoded_input)[0]
-    prediction_prob = loaded_model.predict_proba(encoded_input)[0][1]
+    prediction = loaded_model.predict(input_df)[0]
+    prediction_prob = loaded_model.predict_proba(input_df)[0][1]
 
-    # Assertions
-    assert prediction in [0, 1], "Prediction should be binary (0 or 1)"
-    assert 0 <= prediction_prob <= 1, "Prediction probability should be between 0 and 1"
+    assert prediction in [0, 1], "Prediction should be 0 or 1"
+    assert 0 <= prediction_prob <= 1, "Probability should be between 0 and 1"
 
-# Test case 4: Test accuracy of predictions on a test set (Optional)
+# ✅ Test 4: Accuracy on full dataset (optional)
 def test_model_accuracy():
-    # Load dataset
     df = download_data()
-    
-    # Preprocessing steps similar to your actual application
-    X = df.drop(columns=["Churn"])  # Features
-    y = df["Churn"]  # Target variable
 
-    # Load the model
+    # Drop ID and prepare features and target
+    df = df.drop(columns=["customerID"])
+    X = df.drop(columns=["Churn"])
+    y = df["Churn"].map({"Yes": 1, "No": 0})  # Encode labels
+
+    # Load model
     model_data, encoders = load_model()
     loaded_model = model_data["model"]
-    
-    # Encode the data
+
+    # Encode features using saved encoders
     for col, encoder in encoders.items():
         if col in X.columns:
             X[col] = encoder.transform(X[col])
-    
-    # Make predictions
-    y_pred = loaded_model.predict(X)
-    
-    # Calculate accuracy
-    accuracy = accuracy_score(y, y_pred)
-    assert accuracy > 0.75, f"Model accuracy should be greater than 75%, but got {accuracy:.2f}"
 
+    # Predict and check accuracy
+    y_pred = loaded_model.predict(X)
+    accuracy = accuracy_score(y, y_pred)
+    assert accuracy > 0.75, f"Accuracy should be > 75%, got {accuracy:.2%}"
