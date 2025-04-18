@@ -2,7 +2,8 @@ pipeline {
     agent any
 
     environment {
-        PYTHON_PATH = "C:\\Users\\dell\\AppData\\Local\\Programs\\Python\\Python312\\python.exe"
+        // Set the environment variable for Kaggle CLI authentication
+        KAGGLE_CONFIG_DIR = 'C:\\WINDOWS\\system32\\config\\systemprofile\\.kaggle'
     }
 
     stages {
@@ -14,44 +15,38 @@ pipeline {
 
         stage('Install Dependencies') {
             steps {
-                bat "${env.PYTHON_PATH} -m pip install -r requirements.txt || ${env.PYTHON_PATH} -m pip install pandas scikit-learn matplotlib pytest kaggle"
-            }
-        }
-
-        stage('Setup Kaggle API Key') {
-            steps {
-                withCredentials([file(credentialsId: 'kaggle-json', variable: 'KAGGLE_SECRET')]) {
-                    bat '''
-                    mkdir "%USERPROFILE%\\.kaggle"
-                    copy "%KAGGLE_SECRET%" "%USERPROFILE%\\.kaggle\\kaggle.json"
-                    '''
-                }
+                bat '"C:\\Users\\dell\\AppData\\Local\\Programs\\Python\\Python312\\python.exe" -m pip install -r requirements.txt || "C:\\Users\\dell\\AppData\\Local\\Programs\\Python\\Python312\\python.exe" -m pip install pandas scikit-learn matplotlib pytest kaggle'
             }
         }
 
         stage('Download Dataset from Kaggle') {
             steps {
-                bat '''
-                kaggle datasets download -d blastchar/telco-customer-churn -p . --unzip
-                '''
+                script {
+                    // Make sure kaggle.json is available and accessible
+                    bat 'mkdir "C:\\WINDOWS\\system32\\config\\systemprofile\\.kaggle"'
+                    bat 'copy "C:\\ProgramData\\Jenkins\\.jenkins\\workspace\\Customer-Churn-Testing\\kaggle.json" "C:\\WINDOWS\\system32\\config\\systemprofile\\.kaggle\\kaggle.json"'
+                    
+                    // Download dataset from Kaggle using Kaggle API
+                    bat 'kaggle datasets download -d blastchar/telco-customer-churn -p . --unzip'
+                }
             }
         }
 
         stage('Run Model Script') {
             steps {
-                bat "${env.PYTHON_PATH} churn.py"
+                bat '"C:\\Users\\dell\\AppData\\Local\\Programs\\Python\\Python312\\python.exe" churn.py'
             }
         }
 
         stage('Run Tests') {
             steps {
-                bat "${env.PYTHON_PATH} -m pytest tests"
+                bat '"C:\\Users\\dell\\AppData\\Local\\Programs\\Python\\Python312\\python.exe" -m pytest tests'
             }
         }
 
         stage('Deploy (optional)') {
             steps {
-                echo '🚀 You can add deployment logic here.'
+                echo 'You can add deployment commands here (e.g., run container, push to Docker Hub)'
             }
         }
     }
