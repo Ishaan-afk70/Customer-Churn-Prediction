@@ -5,7 +5,7 @@ from sklearn.preprocessing import LabelEncoder
 import pickle
 from sklearn.metrics import accuracy_score
 import streamlit as st
-from your_streamlit_app_code import load_model  # Import your actual app code here
+from churn import load_model  # Import your actual app code here
 
 def download_data():
     dataset_name = "blastchar/telco-customer-churn"
