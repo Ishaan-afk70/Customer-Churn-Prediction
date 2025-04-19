@@ -22,7 +22,9 @@ pipeline {
                 echo '📦 Installing Python packages...'
                 bat '''
                     %PYTHON% -m pip install --upgrade pip
-                    %PYTHON% -m pip install -r requirements.txt || %PYTHON% -m pip install pandas scikit-learn matplotlib pytest kaggle
+                    %PYTHON% -m pip install -r requirements.txt || (
+                        %PYTHON% -m pip install pandas scikit-learn matplotlib pytest kaggle werkzeug
+                    )
                 '''
             }
         }
