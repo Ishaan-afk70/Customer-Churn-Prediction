@@ -2,7 +2,6 @@ pipeline {
     agent any
 
     environment {
-        // Set the environment variable for Kaggle CLI authentication
         KAGGLE_CONFIG_DIR = 'C:\\WINDOWS\\system32\\config\\systemprofile\\.kaggle'
         PYTHON = 'C:\\Users\\dell\\AppData\\Local\\Programs\\Python\\Python312\\python.exe'
         PIP = 'C:\\Users\\dell\\AppData\\Local\\Programs\\Python\\Python312\\Scripts\\pip.exe'
@@ -21,10 +20,10 @@ pipeline {
             steps {
                 echo '📦 Installing Python packages...'
                 bat '''
-                    %PYTHON% -m pip install --upgrade pip
-                    %PYTHON% -m pip install -r requirements.txt || (
-                        %PYTHON% -m pip install pandas scikit-learn matplotlib pytest kaggle werkzeug
-                    )
+                    %PIP% install --upgrade pip
+                    %PIP% install -r requirements.txt
+                    %PIP% install werkzeug flask pytest pytest-flask
+                    %PIP% list
                 '''
             }
         }
@@ -58,14 +57,14 @@ pipeline {
 
         stage('Deploy (optional)') {
             steps {
-                echo '🚢 You can add deployment steps here if needed.'
+                echo '🚢 Add deployment logic here.'
             }
         }
     }
 
     post {
         success {
-            echo '✅ CI/CD pipeline completed successfully!'
+            echo '✅ Pipeline completed successfully!'
         }
         failure {
             echo '❌ Pipeline failed. Check logs for issues.'
