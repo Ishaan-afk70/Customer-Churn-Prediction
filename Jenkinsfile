@@ -2,7 +2,6 @@ pipeline {
     agent any
 
     environment {
-        // Kaggle API credentials directory for Jenkins (LocalSystem)
         KAGGLE_CONFIG_DIR = 'C:\\WINDOWS\\system32\\config\\systemprofile\\.kaggle'
         PYTHON = 'C:\\Users\\dell\\AppData\\Local\\Programs\\Python\\Python312\\python.exe'
     }
@@ -17,7 +16,7 @@ pipeline {
 
         stage('Install Dependencies') {
             steps {
-                echo '📥 Installing Python dependencies...'
+                echo '📥 Installing dependencies...'
                 bat '''
                     %PYTHON% -m pip install --upgrade pip
                     %PYTHON% -m pip install -r requirements.txt || %PYTHON% -m pip install pandas scikit-learn matplotlib pytest kaggle
@@ -25,16 +24,15 @@ pipeline {
             }
         }
 
-        // ✅ Your Kaggle download stage
         stage('Download Dataset from Kaggle') {
             steps {
                 script {
-                    // Make sure kaggle.json is available and accessible
-                    bat 'mkdir "C:\\WINDOWS\\system32\\config\\systemprofile\\.kaggle"'
-                    bat 'copy "C:\\ProgramData\\Jenkins\\.jenkins\\workspace\\Customer-Churn-Testing\\kaggle.json" "C:\\WINDOWS\\system32\\config\\systemprofile\\.kaggle\\kaggle.json"'
-                    
-                    // Download dataset from Kaggle using Kaggle API
-                    bat 'kaggle datasets download -d blastchar/telco-customer-churn -p . --unzip'
+                    echo '🔐 Configuring Kaggle and downloading dataset...'
+                    bat '''
+                        if not exist "%KAGGLE_CONFIG_DIR%" mkdir "%KAGGLE_CONFIG_DIR%"
+                        copy /Y "C:\\ProgramData\\Jenkins\\.jenkins\\workspace\\Customer-Churn-Testing\\kaggle.json" "%KAGGLE_CONFIG_DIR%\\kaggle.json"
+                        kaggle datasets download -d blastchar/telco-customer-churn -p . --unzip
+                    '''
                 }
             }
         }
@@ -55,7 +53,7 @@ pipeline {
 
         stage('Deploy (optional)') {
             steps {
-                echo '🚢 Optional deployment stage.'
+                echo '🚢 Optional deployment logic goes here.'
             }
         }
     }
