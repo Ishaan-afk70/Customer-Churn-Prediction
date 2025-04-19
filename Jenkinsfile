@@ -2,23 +2,30 @@ pipeline {
     agent any
 
     environment {
-        // Set the environment variable for Kaggle CLI authentication
+        // Kaggle API credentials directory for Jenkins (LocalSystem)
         KAGGLE_CONFIG_DIR = 'C:\\WINDOWS\\system32\\config\\systemprofile\\.kaggle'
+        PYTHON = 'C:\\Users\\dell\\AppData\\Local\\Programs\\Python\\Python312\\python.exe'
     }
 
     stages {
         stage('Clone Repo') {
             steps {
+                echo '📦 Cloning the repository...'
                 git branch: 'main', url: 'https://github.com/Ishaan-afk70/Customer-Churn-Prediction.git'
             }
         }
 
         stage('Install Dependencies') {
             steps {
-                bat '"C:\\Users\\dell\\AppData\\Local\\Programs\\Python\\Python312\\python.exe" -m pip install -r requirements.txt || "C:\\Users\\dell\\AppData\\Local\\Programs\\Python\\Python312\\python.exe" -m pip install pandas scikit-learn matplotlib pytest kaggle'
+                echo '📥 Installing Python dependencies...'
+                bat '''
+                    %PYTHON% -m pip install --upgrade pip
+                    %PYTHON% -m pip install -r requirements.txt || %PYTHON% -m pip install pandas scikit-learn matplotlib pytest kaggle
+                '''
             }
         }
 
+        // ✅ Your Kaggle download stage
         stage('Download Dataset from Kaggle') {
             steps {
                 script {
@@ -34,19 +41,21 @@ pipeline {
 
         stage('Run Model Script') {
             steps {
-                bat '"C:\\Users\\dell\\AppData\\Local\\Programs\\Python\\Python312\\python.exe" churn.py'
+                echo '🚀 Running churn.py...'
+                bat '%PYTHON% churn.py'
             }
         }
 
         stage('Run Tests') {
             steps {
-                bat '"C:\\Users\\dell\\AppData\\Local\\Programs\\Python\\Python312\\python.exe" -m pytest tests'
+                echo '🧪 Running tests...'
+                bat '%PYTHON% -m pytest tests'
             }
         }
 
         stage('Deploy (optional)') {
             steps {
-                echo 'You can add deployment commands here (e.g., run container, push to Docker Hub)'
+                echo '🚢 Optional deployment stage.'
             }
         }
     }
