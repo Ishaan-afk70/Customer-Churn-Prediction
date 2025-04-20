@@ -2,20 +2,22 @@ trigger:
   - main
 
 pool:
-  vmImage: 'ubuntu-latest'
+  vmImage: 'ubuntu-latest'  # or another agent that supports Docker
 
 variables:
   imageName: 'customer-churn-prediction'
+  containerRegistry: 'docker-hub-connection'  # Docker Hub connection name
+  dockerfilePath: 'Dockerfile'  # Adjust if the Dockerfile is in a subfolder
 
 steps:
   - task: DockerInstaller@0
-    displayName: 'Install Docker'
+    displayName: 'Install Docker'  # Optional if Docker is already installed in the agent
 
   - task: Docker@2
     displayName: 'Build and Push Docker image'
     inputs:
-      containerRegistry: 'docker-hub-connection'  # ✅ use the exact name
-      repository: '$(imageName)'
+      containerRegistry: $(containerRegistry)  # Use the exact name of your service connection
+      repository: $(imageName)  # The repository name in Docker Hub
       command: 'buildAndPush'
-      Dockerfile: '**/Dockerfile'
-      tags: latest
+      Dockerfile: $(dockerfilePath)  # Path to the Dockerfile (adjust if in subfolder)
+      tags: 'latest'  # Tagging the image as 'latest'
