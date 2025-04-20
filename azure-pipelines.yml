@@ -1,24 +1,38 @@
 trigger:
-  - main
+  branches:
+    include:
+      - main
 
 pool:
-  name: Default  # ✅ your self-hosted agent name
+  name: Default   # your self‑hosted agent pool (or use 'Hosted Windows 2022' if you want Microsoft‑hosted)
 
 variables:
   imageName: 'customer-churn-prediction'
-  containerRegistry: 'docker-hub-connection'
+  dockerHubRepo: 'adityaram24/$(imageName)'
   dockerfilePath: 'Dockerfile'
 
 steps:
-  # DockerInstaller step is not needed for self-hosted agent with Docker Desktop
-  # - task: DockerInstaller@0
-  #   displayName: 'Install Docker'
+- checkout: self
+  displayName: '🔄 Checkout code'
 
-  - task: Docker@2
-    displayName: 'Build and Push Docker image'
-    inputs:
-      containerRegistry: $(containerRegistry)
-      repository: $(imageName)
-      command: 'buildAndPush'
-      Dockerfile: $(dockerfilePath)
-      tags: 'latest'
+- script: docker version
+  displayName: '🐋 Verify Docker connectivity'
+
+- task: Docker@2
+  displayName: '🔨 Build image'
+  inputs:
+    command: build
+    dockerfile: $(dockerfilePath)
+    buildContext: '$(Build.SourcesDirectory)'
+    repository: $(dockerHubRepo)
+    tags: |
+      latest
+
+- task: Docker@2
+  displayName: '🚀 Push to Docker Hub'
+  inputs:
+    command: push
+    containerRegistry: 'docker-hub-connection'   # make sure this service connection is set up
+    repository: $(dockerHubRepo)
+    tags: |
+      latest
