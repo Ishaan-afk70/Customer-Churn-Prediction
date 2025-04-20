@@ -1,1 +1,22 @@
+trigger:
+  - main  # or the name of your default branch
+
+pool:
+  vmImage: 'ubuntu-latest'
+
+variables:
+  imageName: 'customer-churn-prediction'
+
+steps:
+  - task: DockerInstaller@0
+    displayName: 'Install Docker'
+
+  - task: Docker@2
+    displayName: 'Build Docker image'
+    inputs:
+      containerRegistry: '<your-azure-container-registry-service-connection>'
+      repository: '$(imageName)'
+      command: 'buildAndPush'
+      Dockerfile: '**/Dockerfile'
+      tags: latest
 
