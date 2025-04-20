@@ -1,23 +1,24 @@
 trigger:
-  - main  # Adjust to your branch name if necessary
+  - main
 
 pool:
-  name: 'Default'  # Replace with your self-hosted agent pool name (e.g., 'Default' or 'windows-agent-01')
+  name: Default  # ✅ your self-hosted agent name
 
 variables:
-  imageName: 'customer-churn-prediction'  # Name of the Docker image you want to push to Docker Hub
-  containerRegistry: 'docker-hub-connection'  # Docker Hub connection name, ensure it's correctly set in Azure DevOps
-  dockerfilePath: 'Dockerfile'  # Path to the Dockerfile (use relative path if in a subfolder)
+  imageName: 'customer-churn-prediction'
+  containerRegistry: 'docker-hub-connection'
+  dockerfilePath: 'Dockerfile'
 
 steps:
-  - task: DockerInstaller@0
-    displayName: 'Install Docker'  # Optional, but useful to ensure Docker is available (if agent doesn't have it pre-installed)
+  # DockerInstaller step is not needed for self-hosted agent with Docker Desktop
+  # - task: DockerInstaller@0
+  #   displayName: 'Install Docker'
 
   - task: Docker@2
     displayName: 'Build and Push Docker image'
     inputs:
-      containerRegistry: $(containerRegistry)  # Your Docker Hub service connection name in Azure DevOps
-      repository: $(imageName)  # Docker Hub repository (e.g., username/repository)
-      command: 'buildAndPush'  # Command to build and push the image
-      Dockerfile: $(dockerfilePath)  # Path to your Dockerfile (adjust if it's not in the root)
-      tags: 'latest'  # Tagging the image as 'latest'
+      containerRegistry: $(containerRegistry)
+      repository: $(imageName)
+      command: 'buildAndPush'
+      Dockerfile: $(dockerfilePath)
+      tags: 'latest'
