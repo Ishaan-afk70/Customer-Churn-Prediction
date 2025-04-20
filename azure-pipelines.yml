@@ -1,5 +1,5 @@
 trigger:
-  - main  # or the name of your default branch
+  - main
 
 pool:
   vmImage: 'ubuntu-latest'
@@ -12,11 +12,10 @@ steps:
     displayName: 'Install Docker'
 
   - task: Docker@2
-    displayName: 'Build Docker image'
+    displayName: 'Build and Push Docker image'
     inputs:
-      containerRegistry: '<your-azure-container-registry-service-connection>'
+      containerRegistry: 'docker-hub-connection'  # ✅ use the exact name
       repository: '$(imageName)'
       command: 'buildAndPush'
       Dockerfile: '**/Dockerfile'
       tags: latest
-
