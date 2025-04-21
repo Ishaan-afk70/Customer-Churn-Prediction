@@ -8,7 +8,7 @@ import time
 
 # Set page configuration
 st.set_page_config(
-    page_title="Stay or Stray? 🚀",
+    page_title="Stay or Stray??? 🚀",
     page_icon="📊",
     layout="wide"
 )
