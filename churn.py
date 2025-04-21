@@ -84,7 +84,7 @@ try:
     feature_importance = get_feature_importance()
     
     # Main app header
-    st.markdown("<h1 class='main-header'>Stay or Stray? 🚀</h1>", unsafe_allow_html=True)
+    st.markdown("<h1 class='main-header'>Stay or leave? 🚀</h1>", unsafe_allow_html=True)
     
     # Create tabs for organization
     tabs = st.tabs(["Prediction Tool", "Feature Importance", "About"])
